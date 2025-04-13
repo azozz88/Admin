@@ -7,31 +7,25 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # تحميل Ngrok
-      - name: Download Ngrok
-        run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+      - name: Download Ngrok (v3)
+        run: Invoke-WebRequest https://ngrok-agent.s3.amazonaws.com/ngrok.zip -OutFile ngrok.zip
 
-      # فك ضغط الملف
       - name: Extract Ngrok
         run: Expand-Archive ngrok.zip -DestinationPath ngrok
 
-      # إدخال التوكن الخاص بـ Ngrok من الأسرار
       - name: Authenticate Ngrok
-        run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+        run: .\ngrok\ngrok.exe config add-authtoken $Env:NGROK_AUTH_TOKEN
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
-      # تفعيل سطح المكتب البعيد (Remote Desktop)
       - name: Enable RDP
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
 
-      # تعيين كلمة مرور للمستخدم
       - name: Set RDP Password
         run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-      # فتح نفق ngrok على بورت 3389 (RDP)
-      - name: Create Ngrok Tunnel
+      - name: Start Ngrok Tunnel
         run: .\ngrok\ngrok.exe tcp 3389
