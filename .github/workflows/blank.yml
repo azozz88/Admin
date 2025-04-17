@@ -27,5 +27,10 @@ jobs:
       - name: Set RDP Password
         run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
+      - name: Install Python
+        run: |
+          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe -OutFile python-installer.exe
+          Start-Process python-installer.exe -Wait -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1 Include_test=0'
+
       - name: Start Ngrok Tunnel
         run: .\ngrok\ngrok.exe tcp 3389
